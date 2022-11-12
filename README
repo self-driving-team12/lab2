@@ -1,0 +1,6 @@
+# Pocket Racers: Self-Driving Raspberry Pi Car
+
+## Getting Started
+
+When SSH'd into the RPi, make sure to run `source .venv/bin/activate` before
+running Python. This sets up the Python virtual environment.
