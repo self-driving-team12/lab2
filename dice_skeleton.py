@@ -82,8 +82,20 @@ detector_white = cv2.SimpleBlobDetector_create(bdp_white)
 
 def white_dice(img):
     """YOUR FILTERS GO HERE"""
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return gray_img
+    # new_dims = (int(img.shape[1] * 2), int(img.shape[0] * 2))
+    # downscale = cv2.resize(img, new_dims)
+
+    blur = cv2.blur(img,(3,3))
+    gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+    ret, thresh1 = cv2.threshold(gray_img,127,255,cv2.THRESH_BINARY_INV)
+
+    mask = cv2.adaptiveThreshold(gray_img, maxValue=255, adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C, thresholdType=cv2.THRESH_BINARY_INV, blockSize=21, C=2)
+    
+    BLOCK_SIZE = 5
+    res = cv2.erode(mask, np.ones((BLOCK_SIZE, BLOCK_SIZE), np.uint8), iterations = 1)
+    res = cv2.dilate(res, np.ones((BLOCK_SIZE, BLOCK_SIZE), np.uint8), iterations = 3)
+    #return gray_img
+    return res
 
 
 bdp_color = cv2.SimpleBlobDetector_Params()
@@ -119,6 +131,7 @@ try:
         # Test your filters by adding them directly to this while loop
         # (or creating a new function), then uncommenting the line below:
 
+        cv2.imshow("Capture", points)
         cv2.imshow("Capture", points)
 
         # Uncomment these two lines when getting checked off.
