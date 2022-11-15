@@ -7,6 +7,7 @@ import time
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
+
 class PiVideoStream:
     def __init__(self, resolution=(640, 480), framerate=32):
         # initialize the camera and stream
@@ -14,19 +15,18 @@ class PiVideoStream:
         self.camera.resolution = resolution
         self.camera.framerate = framerate
         self.rawCapture = PiRGBArray(self.camera, size=resolution)
-        self.stream = self.camera.capture_continuous(self.rawCapture,
-            format="bgr", use_video_port=True)
+        self.stream = self.camera.capture_continuous(
+            self.rawCapture, format="bgr", use_video_port=True
+        )
         # initialize the frame and the variable used to indicate
         # if the thread should be stopped
         self.frame = None
         self.stopped = False
 
-
     def start(self):
         # start the thread to read frames from the video stream
         Thread(target=self.update, args=()).start()
         return self
-    
 
     def update(self):
         # keep looping infinitely until the thread is stopped
@@ -47,14 +47,13 @@ class PiVideoStream:
         # return the frame most recently read
         return self.frame
 
-
     def stop(self):
         # indicate that the thread should be stopped
         self.stopped = True
 
 
 print("[INFO] sampling THREADED frames from `picamera` module...")
-vs = PiVideoStream(resolution=(640,480)).start()
+vs = PiVideoStream(resolution=(640, 480)).start()
 time.sleep(2.0)
 
 GPIO.setwarnings(False)
@@ -64,6 +63,7 @@ GPIO.setup(7, GPIO.OUT)
 pi_pwm = GPIO.PWM(7, 50)
 pi_pwm.start(0)
 
+
 def output_result(dot_count):
     global pi_pwm
     duty_cycles = range(0, 97, 8)
@@ -72,25 +72,30 @@ def output_result(dot_count):
     except:
         pi_pwm.ChangeDutyCycle(0)
 
+
 bdp_white = cv2.SimpleBlobDetector_Params()
-''' UPDATE THESE PARAMETERS FOR YOUR WHITE DIE BLOB DETECTION '''
+""" UPDATE THESE PARAMETERS FOR YOUR WHITE DIE BLOB DETECTION """
 bdp_white.filterByColor = False
 
 detector_white = cv2.SimpleBlobDetector_create(bdp_white)
 
+
 def white_dice(img):
-    ''' YOUR FILTERS GO HERE '''
+    """YOUR FILTERS GO HERE"""
     return 0
 
+
 bdp_color = cv2.SimpleBlobDetector_Params()
-''' UPDATE THESE PARAMETERS FOR YOUR COLORED DICE BLOB DETECTION '''
+""" UPDATE THESE PARAMETERS FOR YOUR COLORED DICE BLOB DETECTION """
 bdp_color.filterByColor = False
 
 detector_color = cv2.SimpleBlobDetector_create(bdp_color)
 
+
 def colored_dice(img):
-    ''' YOUR FILTERS GO HERE '''
+    """YOUR FILTERS GO HERE"""
     return 0
+
 
 frame_count = 0
 try:
@@ -99,32 +104,32 @@ try:
         frame_count += 1
         img = cv2.rotate(result, cv2.ROTATE_180)
 
-        ''' PART 1 '''
+        """ PART 1 """
 
-        ''' GENERAL FILTERING '''
+        """ GENERAL FILTERING """
 
-        ''' WHITE DIE '''
+        """ WHITE DIE """
         points = white_dice(img)
 
-        ''' COLORED DICE '''
+        """ COLORED DICE """
         # points = colored_dice(img)
 
         # Display the processed image with window title "Capture".
         # Test your filters by adding them directly to this while loop
         # (or creating a new function), then uncommenting the line below:
-        
+
         cv2.imshow("Capture", img)
- 
+
         # Uncomment these two lines when getting checked off.
 
         # if frame_count % 3 == 0:
         #     output_result(len(points))
 
         k = cv2.waitKey(3)
-        if k == ord('q'):
+        if k == ord("q"):
             # If you press 'q' in the OpenCV window, the program will stop running.
             break
-        elif k == ord('p'):
+        elif k == ord("p"):
             # If you press 'p', the camera feed will be paused until you press
             # <Enter> in the terminal.
             input()
