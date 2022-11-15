@@ -82,7 +82,8 @@ detector_white = cv2.SimpleBlobDetector_create(bdp_white)
 
 def white_dice(img):
     """YOUR FILTERS GO HERE"""
-    return 0
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return gray_img
 
 
 bdp_color = cv2.SimpleBlobDetector_Params()
@@ -118,7 +119,7 @@ try:
         # Test your filters by adding them directly to this while loop
         # (or creating a new function), then uncommenting the line below:
 
-        cv2.imshow("Capture", img)
+        cv2.imshow("Capture", points)
 
         # Uncomment these two lines when getting checked off.
 
