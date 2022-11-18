@@ -73,11 +73,21 @@ def output_result(dot_count):
         pi_pwm.ChangeDutyCycle(0)
 
 
-bdp_white = cv2.SimpleBlobDetector_Params()
+bdp = cv2.SimpleBlobDetector_Params()
 """ UPDATE THESE PARAMETERS FOR YOUR WHITE DIE BLOB DETECTION """
-bdp_white.filterByColor = False
+bdp.filterByArea = True
+bdp.filterByConvexity = False
+bdp.filterByCircularity = True
+bdp.filterByInertia = False
+bdp.filterByColor = True
+bdp.blobColor = 255
 
-detector_white = cv2.SimpleBlobDetector_create(bdp_white)
+bdp.minCircularity = 0.5
+bdp.maxCircularity = 1
+
+bdp.minArea = 30
+
+detector = cv2.SimpleBlobDetector_create(bdp)
 
 
 def white_dice(img):
@@ -85,18 +95,20 @@ def white_dice(img):
     # new_dims = (int(img.shape[1] * 2), int(img.shape[0] * 2))
     # downscale = cv2.resize(img, new_dims)
 
-    BLUR_DIM = (10, 10)
+    BLUR_DIM = (5, 5)
 
-    MASK_BLOCK_SIZE = 11
+    MASK_BLOCK_SIZE = 25
     MASK_C = 2
 
-    ERODE_DILATE_DIM = 1
+    ERODE_X_Y = 5
 
-    ERODE_DIM = (ERODE_DILATE_DIM, ERODE_DILATE_DIM)
-    ERODE_ITERATIONS = 3
+    ERODE_DIM = (ERODE_X_Y, ERODE_X_Y)
+    ERODE_ITERATIONS = 1
 
-    DILATE_DIM = (ERODE_DILATE_DIM, ERODE_DILATE_DIM)
-    DILATE_ITERATIONS = 3
+    DILATE_X_Y = 1
+
+    DILATE_DIM = (DILATE_X_Y, DILATE_X_Y)
+    DILATE_ITERATIONS = 1
 
     blur = cv2.blur(img, BLUR_DIM)
     gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
@@ -145,6 +157,8 @@ try:
         """ WHITE DIE """
         points = white_dice(img)
 
+        num_points = detector.detect(points)
+
         """ COLORED DICE """
         # points = colored_dice(img)
 
@@ -157,8 +171,9 @@ try:
 
         # Uncomment these two lines when getting checked off.
 
-        # if frame_count % 3 == 0:
-        #     output_result(len(points))
+        if frame_count % 3 == 0:
+            output_result(len(num_points))
+        print(len(num_points))
 
         k = cv2.waitKey(3)
         if k == ord("q"):
