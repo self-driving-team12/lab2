@@ -85,15 +85,17 @@ def white_dice(img):
     # new_dims = (int(img.shape[1] * 2), int(img.shape[0] * 2))
     # downscale = cv2.resize(img, new_dims)
 
-    BLUR_DIM = (3, 3)
+    BLUR_DIM = (10, 10)
 
-    MASK_BLOCK_SIZE = 21
+    MASK_BLOCK_SIZE = 11
     MASK_C = 2
 
-    ERODE_DIM = (5, 5)
-    ERODE_ITERATIONS = 1
+    ERODE_DILATE_DIM = 1
 
-    DILATE_DIM = (5, 5)
+    ERODE_DIM = (ERODE_DILATE_DIM, ERODE_DILATE_DIM)
+    ERODE_ITERATIONS = 3
+
+    DILATE_DIM = (ERODE_DILATE_DIM, ERODE_DILATE_DIM)
     DILATE_ITERATIONS = 3
 
     blur = cv2.blur(img, BLUR_DIM)
@@ -108,14 +110,13 @@ def white_dice(img):
         C=MASK_C,
     )
 
-    white_erode = cv2.erode(
-        mask, np.ones(ERODE_DIM, np.uint8), iterations=ERODE_ITERATIONS
-    )
-    white_dilate = cv2.dilate(
-        white_erode, np.ones(DILATE_DIM, np.uint8), iterations=DILATE_ITERATIONS
+    erode = cv2.erode(mask, np.ones(ERODE_DIM, np.uint8), iterations=ERODE_ITERATIONS)
+
+    dilate = cv2.dilate(
+        erode, np.ones(DILATE_DIM, np.uint8), iterations=DILATE_ITERATIONS
     )
 
-    return white_dilate
+    return dilate
 
 
 bdp_color = cv2.SimpleBlobDetector_Params()
