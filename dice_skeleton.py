@@ -85,17 +85,37 @@ def white_dice(img):
     # new_dims = (int(img.shape[1] * 2), int(img.shape[0] * 2))
     # downscale = cv2.resize(img, new_dims)
 
-    blur = cv2.blur(img,(3,3))
-    gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
-    ret, thresh1 = cv2.threshold(gray_img,127,255,cv2.THRESH_BINARY_INV)
+    BLUR_DIM = (3, 3)
 
-    mask = cv2.adaptiveThreshold(gray_img, maxValue=255, adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C, thresholdType=cv2.THRESH_BINARY_INV, blockSize=21, C=2)
-    
-    BLOCK_SIZE = 5
-    res = cv2.erode(mask, np.ones((BLOCK_SIZE, BLOCK_SIZE), np.uint8), iterations = 1)
-    res = cv2.dilate(res, np.ones((BLOCK_SIZE, BLOCK_SIZE), np.uint8), iterations = 3)
-    #return gray_img
-    return res
+    MASK_BLOCK_SIZE = 21
+    MASK_C = 2
+
+    ERODE_DIM = (5, 5)
+    ERODE_ITERATIONS = 1
+
+    DILATE_DIM = (5, 5)
+    DILATE_ITERATIONS = 3
+
+    blur = cv2.blur(img, BLUR_DIM)
+    gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+
+    mask = cv2.adaptiveThreshold(
+        gray_img,
+        maxValue=255,
+        adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        thresholdType=cv2.THRESH_BINARY_INV,
+        blockSize=MASK_BLOCK_SIZE,
+        C=MASK_C,
+    )
+
+    white_erode = cv2.erode(
+        mask, np.ones(ERODE_DIM, np.uint8), iterations=ERODE_ITERATIONS
+    )
+    white_dilate = cv2.dilate(
+        white_erode, np.ones(DILATE_DIM, np.uint8), iterations=DILATE_ITERATIONS
+    )
+
+    return white_dilate
 
 
 bdp_color = cv2.SimpleBlobDetector_Params()
