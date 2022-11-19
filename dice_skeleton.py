@@ -82,10 +82,10 @@ bdp.filterByInertia = False
 bdp.filterByColor = True
 bdp.blobColor = 255
 
-bdp.minCircularity = 0.5
+bdp.minCircularity = 0.8
 bdp.maxCircularity = 1
 
-bdp.minArea = 30
+bdp.minArea = 50
 
 detector = cv2.SimpleBlobDetector_create(bdp)
 
@@ -95,25 +95,29 @@ def white_dice(img):
     # new_dims = (int(img.shape[1] * 2), int(img.shape[0] * 2))
     # downscale = cv2.resize(img, new_dims)
 
-    BLUR_DIM = (5, 5)
+    BLUR_DIM = (4, 4)
 
-    MASK_BLOCK_SIZE = 25
-    MASK_C = 2
+    MASK_BLOCK_SIZE = 31
+    MASK_C = 10
 
-    ERODE_X_Y = 5
+    ERODE_X_Y = 3
 
     ERODE_DIM = (ERODE_X_Y, ERODE_X_Y)
     ERODE_ITERATIONS = 1
 
-    DILATE_X_Y = 1
+    DILATE_X_Y = 3
 
     DILATE_DIM = (DILATE_X_Y, DILATE_X_Y)
-    DILATE_ITERATIONS = 1
+    DILATE_ITERATIONS = 3
 
-    blur = cv2.blur(img, BLUR_DIM)
+    height = img.shape[0]
+
+    cropped = img[height // 4 : height, :]
+
+    blur = cv2.blur(cropped, BLUR_DIM)
     gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
-    mask = cv2.adaptiveThreshold(
+    threshold = cv2.adaptiveThreshold(
         gray_img,
         maxValue=255,
         adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -122,13 +126,17 @@ def white_dice(img):
         C=MASK_C,
     )
 
-    erode = cv2.erode(mask, np.ones(ERODE_DIM, np.uint8), iterations=ERODE_ITERATIONS)
-
     dilate = cv2.dilate(
-        erode, np.ones(DILATE_DIM, np.uint8), iterations=DILATE_ITERATIONS
+        threshold, np.ones(DILATE_DIM, np.uint8), iterations=DILATE_ITERATIONS
     )
 
-    return dilate
+    erode = cv2.erode(dilate, np.ones(ERODE_DIM, np.uint8), iterations=ERODE_ITERATIONS)
+
+    dilate = cv2.dilate(
+        threshold, np.ones(DILATE_DIM, np.uint8), iterations=DILATE_ITERATIONS
+    )
+
+    return threshold
 
 
 bdp_color = cv2.SimpleBlobDetector_Params()
@@ -155,9 +163,19 @@ try:
         """ GENERAL FILTERING """
 
         """ WHITE DIE """
-        points = white_dice(img)
+        filtered_image = white_dice(img)
 
-        num_points = detector.detect(points)
+        key_points = detector.detect(filtered_image)
+
+        RED = (0, 0, 255)
+
+        image_with_keys = cv2.drawKeypoints(
+            filtered_image,
+            key_points,
+            0,
+            RED,
+            flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT,
+        )
 
         """ COLORED DICE """
         # points = colored_dice(img)
@@ -166,14 +184,13 @@ try:
         # Test your filters by adding them directly to this while loop
         # (or creating a new function), then uncommenting the line below:
 
-        cv2.imshow("Capture", points)
-        cv2.imshow("Capture", points)
+        cv2.imshow("Capture", image_with_keys)
 
         # Uncomment these two lines when getting checked off.
 
         if frame_count % 3 == 0:
-            output_result(len(num_points))
-        print(len(num_points))
+            output_result(len(key_points))
+        print(len(key_points))
 
         k = cv2.waitKey(3)
         if k == ord("q"):
